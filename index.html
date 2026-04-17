@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Угадайка — Акинатор</title>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:rgba(255,255,255,0.08);--text:#e6edf3;--muted:#8b949e;--accent:#7c3aed;--accent2:#6d28d9;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--radius:12px;--radius-sm:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.logo{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.logo span{background:var(--accent);border-radius:6px;padding:2px 8px;font-size:13px;color:#fff}
+.nav-tabs{display:flex;gap:4px}
+.tab-btn{padding:6px 14px;border-radius:var(--radius-sm);border:none;cursor:pointer;background:transparent;color:var(--muted);font-size:14px;transition:all .15s}
+.tab-btn.active,.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{font-weight:500}
+.page{display:none;padding:32px 24px;max-width:760px;margin:0 auto}
+.page.active{display:block}
+.game-wrap{text-align:center}
+.oracle-face{width:100px;height:100px;border-radius:50%;margin:0 auto 24px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 0 40px rgba(124,58,237,.35);animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 40px rgba(124,58,237,.35)}50%{box-shadow:0 0 60px rgba(124,58,237,.55)}}
+.progress-bar-wrap{margin:0 auto 24px;max-width:400px}
+.progress-label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+.progress-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width .4s;border-radius:2px}
+.candidates-count{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;color:var(--muted);margin-bottom:20px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.question-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;margin-bottom:24px;text-align:left}
+.q-label{font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.q-text{font-size:22px;font-weight:600;line-height:1.4}
+.answer-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:24px}
+.ans-btn{padding:12px 24px;border-radius:var(--radius);border:1.5px solid;font-size:15px;font-weight:500;cursor:pointer;transition:all .15s;min-width:130px}
+.ans-btn:hover{transform:translateY(-2px)}
+.ans-btn:active{transform:scale(.97)}
+.btn-yes{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.5);color:#34d399}
+.btn-yes:hover{background:rgba(16,185,129,.2);border-color:#10b981}
+.btn-no{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.5);color:#f87171}
+.btn-no:hover{background:rgba(239,68,68,.2);border-color:#ef4444}
+.btn-idk{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.5);color:#fbbf24}
+.btn-idk:hover{background:rgba(245,158,11,.2);border-color:#f59e0b}
+.btn-prob-yes{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.btn-prob-no{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.back-row{display:flex;justify-content:center}
+.back-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;transition:all .15s}
+.back-btn:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.result-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:40px 32px;text-align:center}
+.result-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#4f46e5);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px}
+.result-name{font-size:28px;font-weight:700;margin-bottom:8px}
+.result-desc{color:var(--muted);font-size:15px;line-height:1.6;max-width:420px;margin:0 auto 28px}
+.result-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:28px}
+.tag{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;color:var(--muted)}
+.play-again-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:12px 32px;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
+.play-again-btn:hover{background:var(--accent2)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+h2.title{font-size:20px;font-weight:600}
+.primary-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 18px;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s;white-space:nowrap}
+.primary-btn:hover{background:var(--accent2)}
+.danger-btn{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;cursor:pointer;transition:all .15s}
+.danger-btn:hover{background:rgba(239,68,68,.2)}
+.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.char-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:8px}
+.char-top{display:flex;align-items:center;gap:10px}
+.char-emoji{font-size:28px}
+.char-name{font-size:15px;font-weight:600}
+.char-traits{display:flex;flex-wrap:wrap;gap:4px}
+.char-trait{background:var(--bg3);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--muted)}
+.char-actions{display:flex;gap:6px;margin-top:4px}
+.icon-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s}
+.icon-btn:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:18px;font-weight:600;margin-bottom:20px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:14px;outline:none;transition:border-color .15s}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:70px}
+.modal-row{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+.ghost-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-sm);padding:8px 18px;font-size:14px;cursor:pointer;transition:all .15s}
+.ghost-btn:hover{color:var(--text)}
+.q-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.q-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.q-item-top{display:flex;align-items:flex-start;gap:12px}
+.q-num{background:var(--accent);color:#fff;border-radius:6px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:1px}
+.q-item-text{flex:1;font-size:15px}
+.q-item-chars{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;padding-left:38px}
+.q-char-tag{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:4px;padding:2px 7px;font-size:12px;color:#a78bfa}
+.q-item-actions{display:flex;gap:6px;flex-shrink:0}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:28px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-num{font-size:28px;font-weight:700;color:var(--accent)}
+.stat-lbl{font-size:13px;color:var(--muted);margin-top:4px}
+.info-box{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);border-radius:var(--radius);padding:16px;font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.info-box strong{color:var(--text)}
+.char-checkboxes{display:flex;flex-wrap:wrap;gap:8px}
+.char-check-label{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;cursor:pointer;font-size:13px;transition:all .15s;user-select:none}
+.char-check-label:hover{border-color:var(--accent)}
+.char-check-label input{display:none}
+.char-check-label.checked{background:rgba(124,58,237,.15);border-color:var(--accent);color:#a78bfa}
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty p{font-size:15px;line-height:1.6}
+@media(max-width:500px){nav{padding:0 12px}.page{padding:20px 14px}.q-text{font-size:18px}.answer-grid{flex-direction:column;align-items:center}.ans-btn{width:100%;max-width:320px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">🔮 <span>Угадайка</span></div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="showPage('game')">Игра</button>
+    <button class="tab-btn" onclick="showPage('characters')">Персонажи</button>
+    <button class="tab-btn" onclick="showPage('questions')">Вопросы</button>
+  </div>
+</nav>
+
+<!-- GAME -->
+<div id="page-game" class="page active">
+  <div class="game-wrap">
+    <div class="oracle-face">🔮</div>
+    <div id="game-playing">
+      <div class="progress-bar-wrap">
+        <div class="progress-label">
+          <span id="q-label-num">Вопрос 1</span>
+          <span id="q-label-total">из ?</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+      <div class="candidates-count"><span class="dot"></span><span id="cand-count">0 персонажей</span></div>
+      <div class="question-card">
+        <div class="q-label">Я думаю о персонаже…</div>
+        <div class="q-text" id="q-text">Загрузка…</div>
+      </div>
+      <div class="answer-grid" id="answer-btns"></div>
+      <div class="back-row"><button class="back-btn" onclick="goBack()">← Назад</button></div>
+    </div>
+    <div id="game-result" style="display:none">
+      <div class="result-card">
+        <div class="result-avatar" id="res-avatar"></div>
+        <div class="result-name" id="res-name"></div>
+        <div class="result-desc" id="res-desc"></div>
+        <div class="result-tags" id="res-tags"></div>
+        <button class="play-again-btn" onclick="startGame()">🔄 Играть снова</button>
+      </div>
+    </div>
+    <div id="game-no-result" style="display:none">
+      <div class="result-card">
+        <div style="font-size:56px;margin-bottom:16px">🤷</div>
+        <div class="result-name">Не смог угадать!</div>
+        <div class="result-desc">Ни один персонаж не подошёл. Добавьте нового или уточните вопросы.</div>
+        <button class="play-again-btn" onclick="startGame()">🔄 Попробовать снова</button>
+      </div>
+    </div>
+    <div id="game-empty" style="display:none">
+      <div class="empty"><div class="empty-icon">🎭</div><p>База пуста. Добавьте персонажей и вопросы<br>во вкладках <strong>«Персонажи»</strong> и <strong>«Вопросы»</strong>.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHARACTERS -->
+<div id="page-characters" class="page">
+  <div class="section-header">
+    <h2 class="title">🎭 Персонажи</h2>
+    <button class="primary-btn" onclick="openCharModal()">+ Добавить</button>
+  </div>
+  <div class="info-box">Каждый персонаж имеет <strong>имя, описание, эмодзи и теги</strong>. Вопросы привязываются к персонажам на вкладке «Вопросы».</div>
+  <div class="char-grid" id="char-grid"></div>
+</div>
+
+<!-- QUESTIONS -->
+<div id="page-questions" class="page">
+  <div class="section-header">
+    <h2 class="title">❓ Вопросы</h2>
+    <button class="primary-btn" onclick="openQModal()">+ Добавить</button>
+  </div>
+  <div class="info-box">Каждый вопрос связан с <strong>одним или несколькими персонажами</strong>. Ответ «Да» оставляет только их, «Нет» — исключает.</div>
+  <div class="stats-grid" id="q-stats"></div>
+  <div class="q-list" id="q-list"></div>
+</div>
+
+<!-- CHAR MODAL -->
+<div class="modal-overlay" id="char-modal">
+  <div class="modal">
+    <h3 id="char-modal-title">Добавить персонажа</h3>
+    <input type="hidden" id="char-edit-id">
+    <div class="field"><label>Имя *</label><input type="text" id="char-name-in" placeholder="Например: Шерлок Холмс"></div>
+    <div class="field"><label>Эмодзи (иконка)</label><input type="text" id="char-emoji-in" placeholder="🕵️" maxlength="3"></div>
+    <div class="field"><label>Описание</label><textarea id="char-desc-in" placeholder="Краткое описание персонажа…"></textarea></div>
+    <div class="field"><label>Теги (через запятую)</label><input type="text" id="char-tags-in" placeholder="детектив, Англия, вымысел"></div>
+    <div class="modal-row">
+      <button class="ghost-btn" onclick="closeModal('char-modal')">Отмена</button>
+      <button class="primary-btn" onclick="saveChar()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUESTION MODAL -->
+<div class="modal-overlay" id="q-modal">
+  <div class="modal">
+    <h3 id="q-modal-title">Добавить вопрос</h3>
+    <input type="hidden" id="q-edit-id">
+    <div class="field"><label>Текст вопроса *</label><input type="text" id="q-text-in" placeholder="Этот персонаж — реальный человек?"></div>
+    <div class="field"><label>Персонажи, дающие ответ «Да» *</label><div class="char-checkboxes" id="q-char-checks"></div></div>
+    <div class="modal-row">
+      <button class="ghost-btn" onclick="closeModal('q-modal')">Отмена</button>
+      <button class="primary-btn" onclick="saveQuestion()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY='akin_v3';
+let db=load();
+let idCounter=Date.now();
+const uid=()=>'x'+(++idCounter);
+
+function load(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||defaultDB()}catch{return defaultDB()}}
+function save(){localStorage.setItem(STORE_KEY,JSON.stringify(db))}
+
+function defaultDB(){
+  const chars=[
+    {id:'c1',name:'Шерлок Холмс',emoji:'🕵️',desc:'Гениальный детектив из Лондона, созданный Конан Дойлем.',tags:['вымысел','детектив','Англия']},
+    {id:'c2',name:'Наполеон Бонапарт',emoji:'👑',desc:'Французский полководец и император начала XIX века.',tags:['история','Франция','военный']},
+    {id:'c3',name:'Гермиона Грейнджер',emoji:'🧙',desc:'Волшебница из книг о Гарри Поттере, лучшая студентка Хогвартса.',tags:['вымысел','маг','книга']},
+    {id:'c4',name:'Леонардо да Винчи',emoji:'🎨',desc:'Итальянский художник и учёный эпохи Возрождения.',tags:['история','художник','учёный','Италия']},
+    {id:'c5',name:'Супермен',emoji:'🦸',desc:'Супергерой из комиксов DC, защитник Метрополиса.',tags:['вымысел','супергерой','комикс']}
+  ];
+  const questions=[
+    {id:'q1',text:'Этот персонаж — реальный исторический человек?',chars:['c2','c4']},
+    {id:'q2',text:'Этот персонаж обладает сверхъестественными способностями?',chars:['c3','c5']},
+    {id:'q3',text:'Этот персонаж живёт в Великобритании?',chars:['c1','c3']},
+    {id:'q4',text:'Этот персонаж известен умением расследовать преступления?',chars:['c1']},
+    {id:'q5',text:'Этот персонаж — художник или учёный?',chars:['c4']},
+    {id:'q6',text:'Этот персонаж появился в книгах или комиксах?',chars:['c1','c3','c5']}
+  ];
+  return{chars,questions};
+}
+
+function pluralRu(n,f1,f2,f5){const m=n%100,r=n%10;if(m>=11&&m<=19)return n+' '+f5;if(r===1)return n+' '+f1;if(r>=2&&r<=4)return n+' '+f2;return n+' '+f5}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showEl(id){document.getElementById(id).style.display=''}
+function hideEl(id){document.getElementById(id).style.display='none'}
+
+/* ── PAGE NAV ── */
+const pageIds=['game','characters','questions'];
+function showPage(name){
+  pageIds.forEach(p=>{
+    document.getElementById('page-'+p).classList.remove('active');
+    document.querySelectorAll('.tab-btn')[pageIds.indexOf(p)].classList.remove('active');
+  });
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.tab-btn')[pageIds.indexOf(name)].classList.add('active');
+  if(name==='characters')renderChars();
+  if(name==='questions')renderQuestions();
+}
+
+/* ── MODALS ── */
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id)}));
+
+/* ── CHARACTERS ── */
+function renderChars(){
+  const grid=document.getElementById('char-grid');
+  if(!db.chars.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🎭</div><p>Нет персонажей. Нажмите «+ Добавить».</p></div>';return}
+  grid.innerHTML=db.chars.map(c=>`
+    <div class="char-card">
+      <div class="char-top"><span class="char-emoji">${c.emoji||'🎭'}</span><span class="char-name">${esc(c.name)}</span></div>
+      ${c.desc?`<div style="font-size:13px;color:var(--muted);line-height:1.5">${esc(c.desc)}</div>`:''}
+      <div class="char-traits">${(c.tags||[]).map(t=>`<span class="char-trait">${esc(t)}</span>`).join('')}</div>
+      <div class="char-actions">
+        <button class="icon-btn" onclick="editChar('${c.id}')">✏️ Изменить</button>
+        <button class="icon-btn danger-btn" onclick="deleteChar('${c.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function openCharModal(id){
+  document.getElementById('char-modal-title').textContent=id?'Изменить персонажа':'Добавить персонажа';
+  document.getElementById('char-edit-id').value=id||'';
+  const c=id?db.chars.find(x=>x.id===id):null;
+  document.getElementById('char-name-in').value=c?c.name:'';
+  document.getElementById('char-emoji-in').value=c?c.emoji:'🎭';
+  document.getElementById('char-desc-in').value=c?c.desc:'';
+  document.getElementById('char-tags-in').value=c?(c.tags||[]).join(', '):'';
+  openModal('char-modal');
+}
+function editChar(id){openCharModal(id)}
+function deleteChar(id){
+  if(!confirm('Удалить персонажа?'))return;
+  db.chars=db.chars.filter(c=>c.id!==id);
+  db.questions=db.questions.map(q=>({...q,chars:q.chars.filter(c=>c!==id)}));
+  save();renderChars();
+}
+function saveChar(){
+  const name=document.getElementById('char-name-in').value.trim();
+  if(!name){alert('Введите имя персонажа');return}
+  const id=document.getElementById('char-edit-id').value;
+  const data={name,emoji:document.getElementById('char-emoji-in').value.trim()||'🎭',desc:document.getElementById('char-desc-in').value.trim(),tags:document.getElementById('char-tags-in').value.split(',').map(s=>s.trim()).filter(Boolean)};
+  if(id){Object.assign(db.chars.find(c=>c.id===id),data)}else{db.chars.push({id:uid(),...data})}
+  save();closeModal('char-modal');renderChars();
+}
+
+/* ── QUESTIONS ── */
+function renderQuestions(){
+  const ratio=db.chars.length?Math.round(db.questions.length/db.chars.length*10)/10:0;
+  document.getElementById('q-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${db.chars.length}</div><div class="stat-lbl">Персонажей</div></div>
+    <div class="stat-card"><div class="stat-num">${db.questions.length}</div><div class="stat-lbl">Вопросов</div></div>
+    <div class="stat-card"><div class="stat-num">${ratio}</div><div class="stat-lbl">Вопросов / персонаж</div></div>`;
+  const list=document.getElementById('q-list');
+  if(!db.questions.length){list.innerHTML='<div class="empty"><div class="empty-icon">❓</div><p>Нет вопросов. Нажмите «+ Добавить».</p></div>';return}
+  list.innerHTML=db.questions.map((q,i)=>{
+    const chars=q.chars.map(cid=>{const c=db.chars.find(x=>x.id===cid);return c?c.name:null}).filter(Boolean);
+    return`<div class="q-item">
+      <div class="q-item-top">
+        <div class="q-num">${i+1}</div>
+        <div class="q-item-text">${esc(q.text)}</div>
+        <div class="q-item-actions">
+          <button class="icon-btn" onclick="editQuestion('${q.id}')">✏️</button>
+          <button class="icon-btn danger-btn" onclick="deleteQuestion('${q.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="q-item-chars">
+        ${chars.map(n=>`<span class="q-char-tag">✓ ${esc(n)}</span>`).join('')}
+        ${!chars.length?'<span style="font-size:12px;color:var(--muted)">Нет привязанных персонажей</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openQModal(id){
+  document.getElementById('q-modal-title').textContent=id?'Изменить вопрос':'Добавить вопрос';
+  document.getElementById('q-edit-id').value=id||'';
+  const q=id?db.questions.find(x=>x.id===id):null;
+  document.getElementById('q-text-in').value=q?q.text:'';
+  const wrap=document.getElementById('q-char-checks');
+  if(!db.chars.length){wrap.innerHTML='<span style="font-size:13px;color:var(--muted)">Сначала добавьте персонажей</span>'}
+  else{wrap.innerHTML=db.chars.map(c=>{
+    const checked=q&&q.chars.includes(c.id)?'checked':'';
+    return`<label class="char-check-label ${checked?'checked':''}" onclick="toggleCheck(this)"><input type="checkbox" value="${c.id}" ${checked}>${c.emoji||'🎭'} ${esc(c.name)}</label>`;
+  }).join('')}
+  openModal('q-modal');
+}
+function toggleCheck(lbl){lbl.classList.toggle('checked');lbl.querySelector('input').checked=lbl.classList.contains('checked')}
+function editQuestion(id){openQModal(id)}
+function deleteQuestion(id){
+  if(!confirm('Удалить вопрос?'))return;
+  db.questions=db.questions.filter(q=>q.id!==id);
+  save();renderQuestions();
+}
+function saveQuestion(){
+  const text=document.getElementById('q-text-in').value.trim();
+  if(!text){alert('Введите текст вопроса');return}
+  const chars=Array.from(document.querySelectorAll('#q-char-checks input:checked')).map(i=>i.value);
+  if(!chars.length){alert('Выберите хотя бы одного персонажа');return}
+  const id=document.getElementById('q-edit-id').value;
+  if(id){Object.assign(db.questions.find(q=>q.id===id),{text,chars})}else{db.questions.push({id:uid(),text,chars})}
+  save();closeModal('q-modal');renderQuestions();
+}
+
+/* ── GAME ENGINE ── */
+let gs={};
+
+function startGame(){
+  db=load();
+  if(!db.chars.length||!db.questions.length){showEl('game-empty');hideEl('game-playing');hideEl('game-result');hideEl('game-no-result');return}
+  gs={candidates:db.chars.map(c=>c.id),remaining:db.questions.map(q=>q.id),history:[],step:0,currentQ:null};
+  showEl('game-playing');hideEl('game-result');hideEl('game-no-result');hideEl('game-empty');
+  nextStep();
+}
+
+function nextStep(){
+  const{candidates,remaining}=gs;
+  if(candidates.length===1){showResult(candidates[0]);return}
+  if(candidates.length===0){showNoResult();return}
+  const bq=bestQuestion();
+  if(!bq){showResult(candidates[0]);return}
+  gs.currentQ=bq;gs.step++;
+  const total=db.questions.length;
+  document.getElementById('q-label-num').textContent='Вопрос '+gs.step;
+  document.getElementById('q-label-total').textContent='из ~'+Math.min(total,gs.step+remaining.length);
+  document.getElementById('prog-fill').style.width=Math.min(100,Math.round((gs.step-1)/Math.max(1,total)*100))+'%';
+  document.getElementById('cand-count').textContent=pluralRu(candidates.length,'персонаж','персонажа','персонажей');
+  document.getElementById('q-text').textContent=bq.text;
+  document.getElementById('answer-btns').innerHTML=`
+    <button class="ans-btn btn-yes" onclick="answer('yes')">✅ Да</button>
+    <button class="ans-btn btn-prob-yes" onclick="answer('prob_yes')">🟢 Скорее да</button>
+    <button class="ans-btn btn-idk" onclick="answer('idk')">🤷 Не знаю</button>
+    <button class="ans-btn btn-prob-no" onclick="answer('prob_no')">🔴 Скорее нет</button>
+    <button class="ans-btn btn-no" onclick="answer('no')">❌ Нет</button>`;
+}
+
+function bestQuestion(){
+  const{candidates,remaining}=gs;
+  if(!remaining.length)return null;
+  let best=null,bestScore=Infinity;
+  for(const qid of remaining){
+    const q=db.questions.find(x=>x.id===qid);if(!q)continue;
+    const yes=candidates.filter(cid=>q.chars.includes(cid)).length;
+    const score=Math.abs(yes-(candidates.length-yes));
+    if(score<bestScore){bestScore=score;best=q}
+  }
+  return best;
+}
+
+function applyAnswer(candidates,q,ans){
+  if(ans==='yes')return candidates.filter(cid=>q.chars.includes(cid));
+  if(ans==='no')return candidates.filter(cid=>!q.chars.includes(cid));
+  if(ans==='prob_yes'){const k=candidates.filter(cid=>q.chars.includes(cid));return k.length?k:candidates}
+  if(ans==='prob_no'){const k=candidates.filter(cid=>!q.chars.includes(cid));return k.length?k:candidates}
+  return candidates;
+}
+
+function answer(ans){
+  const q=gs.currentQ;
+  gs.history.push({qid:q.id,ans});
+  gs.remaining=gs.remaining.filter(id=>id!==q.id);
+  gs.candidates=applyAnswer(gs.candidates,q,ans);
+  nextStep();
+}
+
+function goBack(){
+  if(!gs.history||!gs.history.length)return;
+  const last=gs.history.pop();
+  gs.remaining.push(last.qid);
+  gs.step=Math.max(0,gs.step-1);
+  gs.candidates=db.chars.map(c=>c.id);
+  for(const h of gs.history){
+    const q=db.questions.find(x=>x.id===h.qid);if(!q)continue;
+    gs.candidates=applyAnswer(gs.candidates,q,h.ans);
+  }
+  nextStep();
+}
+
+function showResult(charId){
+  const c=db.chars.find(x=>x.id===charId);
+  hideEl('game-playing');
+  document.getElementById('res-avatar').textContent=c.emoji||'🎭';
+  document.getElementById('res-name').textContent=c.name;
+  document.getElementById('res-desc').textContent=c.desc||'';
+  document.getElementById('res-tags').innerHTML=(c.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+  showEl('game-result');
+}
+function showNoResult(){hideEl('game-playing');showEl('game-no-result')}
+
+startGame();
+</script>
+</body>
+</html>
