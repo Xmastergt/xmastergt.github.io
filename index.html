@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Угадайка — Акинатор</title>
+<title>Бузинатор</title>
 <style>
 :root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:rgba(255,255,255,0.08);--text:#e6edf3;--muted:#8b949e;--accent:#7c3aed;--accent2:#6d28d9;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--radius:12px;--radius-sm:8px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -108,11 +108,9 @@ h2.title{font-size:20px;font-weight:600}
 <body>
 
 <nav>
-  <div class="logo">🔮 <span>Угадайка</span></div>
+  <div class="logo">🔮 <span>Бузинатор</span></div>
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="showPage('game')">Игра</button>
-    <button class="tab-btn" onclick="showPage('characters')">Персонажи</button>
-    <button class="tab-btn" onclick="showPage('questions')">Вопросы</button>
   </div>
 </nav>
 
@@ -414,13 +412,10 @@ function nextStep(){
   document.getElementById('q-label-num').textContent='Вопрос '+gs.step;
   document.getElementById('q-label-total').textContent='из ~'+Math.min(total,gs.step+remaining.length);
   document.getElementById('prog-fill').style.width=Math.min(100,Math.round((gs.step-1)/Math.max(1,total)*100))+'%';
-  document.getElementById('cand-count').textContent=pluralRu(candidates.length,'персонаж','персонажа','персонажей');
   document.getElementById('q-text').textContent=bq.text;
   document.getElementById('answer-btns').innerHTML=`
     <button class="ans-btn btn-yes" onclick="answer('yes')">✅ Да</button>
-    <button class="ans-btn btn-prob-yes" onclick="answer('prob_yes')">🟢 Скорее да</button>
     <button class="ans-btn btn-idk" onclick="answer('idk')">🤷 Не знаю</button>
-    <button class="ans-btn btn-prob-no" onclick="answer('prob_no')">🔴 Скорее нет</button>
     <button class="ans-btn btn-no" onclick="answer('no')">❌ Нет</button>`;
 }
 
