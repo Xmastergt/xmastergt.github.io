@@ -103,9 +103,63 @@ h2.title{font-size:20px;font-weight:600}
 .empty-icon{font-size:48px;margin-bottom:12px}
 .empty p{font-size:15px;line-height:1.6}
 @media(max-width:500px){nav{padding:0 12px}.page{padding:20px 14px}.q-text{font-size:18px}.answer-grid{flex-direction:column;align-items:center}.ans-btn{width:100%;max-width:320px}}
+
+/* ── START SCREEN ── */
+#start-screen{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;overflow-y:auto}
+#start-screen.hidden{display:none}
+.start-orb{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:60px;margin:0 auto 32px;box-shadow:0 0 60px rgba(124,58,237,.5);animation:pulse 2.5s ease-in-out infinite}
+.start-title{font-size:48px;font-weight:800;letter-spacing:-1px;margin-bottom:12px;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.start-subtitle{font-size:17px;color:var(--muted);max-width:360px;margin:0 auto 40px;line-height:1.6}
+.start-play-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:16px 48px;font-size:18px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px;box-shadow:0 4px 24px rgba(124,58,237,.4)}
+.start-play-btn:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,58,237,.5)}
+.start-play-btn:active{transform:scale(.97)}
+.start-divider{width:48px;height:2px;background:var(--border);border-radius:2px;margin:40px auto}
+.author-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;max-width:420px;width:100%;text-align:left}
+.author-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.author-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.author-name{font-size:16px;font-weight:600}
+.author-role{font-size:13px;color:var(--muted);margin-top:2px}
+.author-bio{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:16px}
+.author-links{display:flex;flex-wrap:wrap;gap:8px}
+.author-link{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;color:var(--muted);text-decoration:none;transition:all .15s}
+.author-link:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.start-stats{display:flex;gap:24px;justify-content:center;margin-bottom:40px}
+.start-stat{text-align:center}
+.start-stat-num{font-size:22px;font-weight:700;color:var(--accent)}
+.start-stat-lbl{font-size:12px;color:var(--muted);margin-top:2px}
+@media(max-width:500px){.start-title{font-size:36px}.start-play-btn{padding:14px 36px;font-size:16px}.author-card{padding:18px}}
 </style>
 </head>
 <body>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <div class="start-orb">🔮</div>
+  <div class="start-title">Угадайка</div>
+  <div class="start-subtitle">Загадайте персонажа — известного человека, героя книги, фильма или игры. Я угадаю, задавая вопросы.</div>
+  <div class="start-stats">
+    <div class="start-stat"><div class="start-stat-num" id="ss-chars">5</div><div class="start-stat-lbl">персонажей</div></div>
+    <div class="start-stat"><div class="start-stat-num" id="ss-questions">6</div><div class="start-stat-lbl">вопросов</div></div>
+    <div class="start-stat"><div class="start-stat-num">5</div><div class="start-stat-lbl">вариантов ответа</div></div>
+  </div>
+  <button class="start-play-btn" onclick="enterGame()">▶ Начать игру</button>
+  <div class="start-divider"></div>
+  <div class="author-card">
+    <div class="author-top">
+      <div class="author-avatar">👤</div>
+      <div>
+        <div class="author-name">Имя Автора</div>
+        <div class="author-role">Разработчик игры</div>
+      </div>
+    </div>
+    <div class="author-bio">Здесь можно разместить информацию об авторе: краткое описание, увлечения, ссылки на соцсети или проекты. Просто отредактируйте этот блок в файле index.html.</div>
+    <div class="author-links">
+      <a href="#" class="author-link">🌐 Сайт</a>
+      <a href="#" class="author-link">✈️ Telegram</a>
+      <a href="#" class="author-link">💼 GitHub</a>
+    </div>
+  </div>
+</div>
 
 <nav>
   <div class="logo">🔮 <span>Угадайка</span></div>
@@ -387,6 +441,7 @@ function nextStep(){
   document.getElementById('q-text').textContent=bq.text;
   document.getElementById('answer-btns').innerHTML=`
     <button class="ans-btn btn-yes" onclick="answer('yes')">✅ Да</button>
+    <button class="ans-btn btn-prob-yes" onclick="answer('prob_yes')">🟢 Скорее да</button>
     <button class="ans-btn btn-idk" onclick="answer('idk')">🤷 Не знаю</button>
     <button class="ans-btn btn-prob-no" onclick="answer('prob_no')">🔴 Скорее нет</button>
     <button class="ans-btn btn-no" onclick="answer('no')">❌ Нет</button>`;
@@ -445,7 +500,18 @@ function showResult(charId){
 }
 function showNoResult(){hideEl('game-playing');showEl('game-no-result')}
 
-startGame();
+function enterGame(){
+  document.getElementById('start-screen').classList.add('hidden');
+  startGame();
+}
+
+function updateStartStats(){
+  db=load();
+  document.getElementById('ss-chars').textContent=db.chars.length;
+  document.getElementById('ss-questions').textContent=db.questions.length;
+}
+
+updateStartStats();
 </script>
 </body>
 </html>
